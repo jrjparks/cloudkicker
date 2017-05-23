@@ -1,0 +1,48 @@
+{
+  "name": "cloudkicker",
+  "version": "0.0.1",
+  "description": "Node JS cloudflare bypass with promises",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jrjparks/cloudkicker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/jrjparks/cloudkicker/issues"
+  },
+  "homepage": "https://github.com/jrjparks/cloudkicker#readme",
+  "devDependencies": {
+    "@types/chai": "^3.5.2",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^7.0.21",
+    "@types/sinon": "^2.2.2",
+    "chai": "^3.5.0",
+    "gulp": "^3.9.1",
+    "gulp-clean": "^0.3.2",
+    "gulp-mocha": "^4.3.1",
+    "gulp-sequence": "^0.4.6",
+    "gulp-tslint": "^8.0.0",
+    "gulp-typescript": "^3.1.6",
+    "mocha": "^3.4.1",
+    "mocha-typescript": "^1.1.4",
+    "sinon": "^2.2.0",
+    "tslint": "^5.2.0",
+    "typescript": "^2.3.2"
+  },
+  "dependencies": {
+    "@types/lodash": "^4.14.64",
+    "@types/request": "0.0.43",
+    "lodash": "^4.17.4",
+    "request": "^2.81.0"
+  }
+}

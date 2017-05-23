@@ -1,12 +1,12 @@
-import * as request from "request";
+import {OptionsWithUrl, RequestResponse} from "request";
 export interface ICloudKickerResponse {
-  response: request.RequestResponse;
-  options: request.OptionsWithUrl;
+  response: RequestResponse;
+  options: OptionsWithUrl;
 }
 export class CloudKickerResponse implements ICloudKickerResponse {
-  public response: request.RequestResponse;
-  public options: request.OptionsWithUrl;
-  constructor(response: request.RequestResponse, options: request.OptionsWithUrl) {
+  public response: RequestResponse;
+  public options: OptionsWithUrl;
+  constructor(response: RequestResponse, options: OptionsWithUrl) {
     this.response = response;
     this.options = options;
   }

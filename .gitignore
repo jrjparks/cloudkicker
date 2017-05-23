@@ -1,11 +1,3 @@
-# Ignore JS files
-src/**/*.js
-src/**/*.js.map
-src/**/*.d.ts
-
-# Ignore lib
-lib
-
 # Node.JS Template
 # Logs
 logs

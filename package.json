@@ -8,6 +8,7 @@
     "test": "test"
   },
   "scripts": {
+    "build": "gulp rebuild:ts",
     "test": "nyc mocha",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
@@ -39,6 +40,7 @@
     "mocha-typescript": "^1.1.4",
     "nyc": "^10.3.2",
     "sinon": "^2.2.0",
+    "source-map-support": "^0.4.15",
     "ts-node": "^3.0.4",
     "tslint": "^5.2.0",
     "typescript": "^2.3.2"

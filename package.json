@@ -8,7 +8,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "gulp"
+    "test": "nyc mocha",
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,7 @@
     "@types/node": "^7.0.21",
     "@types/sinon": "^2.2.2",
     "chai": "^3.5.0",
+    "coveralls": "^2.13.1",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
     "gulp-mocha": "^4.3.1",
@@ -35,7 +37,9 @@
     "gulp-typescript": "^3.1.6",
     "mocha": "^3.4.1",
     "mocha-typescript": "^1.1.4",
+    "nyc": "^10.3.2",
     "sinon": "^2.2.0",
+    "ts-node": "^3.0.4",
     "tslint": "^5.2.0",
     "typescript": "^2.3.2"
   },

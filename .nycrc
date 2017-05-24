@@ -1,0 +1,23 @@
+{
+  "check-coverage": true,
+  "lines": 90,
+  "statements": 90,
+  "functions": 90,
+  "branches": 90,
+  "exclude": [
+    "**/*.d.ts"
+  ],
+  "reporter": [
+    "lcov",
+    "text-summary"
+  ],
+  "require": [
+    "ts-node/register"
+  ],
+  "extension": [
+    ".ts",
+    ".tsx"
+  ],
+  "cache": true,
+  "all": true
+}

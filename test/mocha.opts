@@ -1,0 +1,6 @@
+--compilers ts:ts-node/register,tsx:ts-node/register
+--require source-map-support/register
+--recursive
+--colors
+--sort
+--ui bdd

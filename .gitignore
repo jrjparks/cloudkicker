@@ -1,3 +1,7 @@
+lib/**/*.js
+test/**/*.js
+*.map
+
 # Node.JS Template
 # Logs
 logs

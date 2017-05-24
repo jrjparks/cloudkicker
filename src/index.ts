@@ -28,6 +28,7 @@ export class CloudKicker {
     });
   }
 
+  // Clear the cookieJar
   public clearCookieJar() {
     this.cookieJar = request.jar();
     this.request.jar(this.cookieJar);
@@ -50,7 +51,7 @@ export class CloudKicker {
 
   public async post(
     url: string,
-    body: string | Buffer,
+    body: any,
     headers: object): Promise<CloudKickerResponse> {
     headers = _.extend({
       "Content-Length": body.length,
@@ -67,9 +68,10 @@ export class CloudKicker {
     return this.performRequest(options);
   }
 
+  // Perform a request and handle cloudflare if needed
   public async performRequest(
     options: request.OptionsWithUrl,
-    progressCallback?: OnProgressCallback): Promise<CloudKickerResponse> {
+    onProgress?: OnProgressCallback): Promise<CloudKickerResponse> {
     options.headers = _.extend({
       "User-Agent": this.options.userAgent,
     }, options.headers);
@@ -102,7 +104,7 @@ export class CloudKicker {
             .then((ckResponse) => {
               // Cleanup the qs from the options
               delete ckResponse.options.qs;
-              // if method is a POST, we need to resubmit to get the corret response.
+              // if method is a POST, we need to resubmit to get the correct response.
               if (ckResponse.options.method === "POST") {
                 ckResponse.options.url = ckResponse.response.headers.location;
                 return this.performRequest(ckResponse.options);
@@ -113,7 +115,7 @@ export class CloudKicker {
             .then(resolve) // Resolve the CloudKickerResponse
             .catch(reject); // Reject the error
         } else if (jschlRedirectedIndex >= 0 || sucuriCloudproxyIndex >= 0) {
-          return this.setCookieAndReload(response, options) // This is a cookie challenge
+          return this.setCookie(response, options) // This is a cookie challenge
             .then((cookieOptions) => this.performRequest(cookieOptions)) // Rerun the request
             .then(resolve) // Resolve the CloudKickerResponse
             .catch(reject); // Reject the error
@@ -121,17 +123,19 @@ export class CloudKicker {
           return resolve(new CloudKickerResponse(response, options));
         }
       });
-      req.on("response", (data) => {
-        totalBytes = parseInt(data.headers["Content-Length"], 10);
-        if (data.statusCode !== 503) {
-          if (progressCallback) {
-            req.on("data", (chunk) => progressCallback(receivedBytes += chunk.length, totalBytes));
+      req.on("response", (response) => {
+        if (response.statusCode !== 503) { // Ignore events for 503
+          // Update totalBytes to Content-Length
+          totalBytes = parseInt(response.headers["Content-Length"], 10);
+          if (onProgress) { // If onProgress is defined, call it on each data event.
+            req.on("data", (data) => onProgress(receivedBytes += data.length, totalBytes));
           }
         }
       });
     });
   }
 
+  // Solve the JS challenge from cloudflare
   private solveChallenge(
     response: request.RequestResponse,
     options: request.OptionsWithUrl): Promise<request.OptionsWithUrl> {
@@ -174,7 +178,8 @@ export class CloudKicker {
     });
   }
 
-  private setCookieAndReload(
+  // Set the cookie for cloudflare
+  private setCookie(
     response: request.RequestResponse,
     options: request.OptionsWithUrl,
     timeout: number = 500): Promise<request.OptionsWithUrl> {
@@ -188,10 +193,12 @@ export class CloudKicker {
         }
         const encodedJsSrc: string = encodedJsSrcMatch[1];
         const cookieJsSrc = new Buffer(encodedJsSrc, "base64").toString("ascii");
+        // Run any foreign code in a vm sandbox
         const cookieSandbox: vm.Context = {};
         vm.runInContext(cookieJsSrc, cookieSandbox, {
           timeout: (timeout),
         });
+        // Save the cookie
         const cookie: request.Cookie = (cookieSandbox as any).document.cookie;
         this.cookieJar.setCookie(cookie, (response.request as any).uri.href, {
           ignoreError: true,
@@ -203,6 +210,7 @@ export class CloudKicker {
     });
   }
 
+  // Solve for the jschl answer
   private solveJschlAnswer(body: string, host: string, timeout: number = 50): number {
     const jschlRegex: RegExp = new RegExp([
       "getElementById\\('cf-content'\\)[\\s\\S]+?setTimeout.+?\\r?\\n([\\s\\S]+?a\\.",
@@ -212,7 +220,7 @@ export class CloudKicker {
     if (!jschlMatch || !jschlMatch[1]) {
       throw new Error("Unable to find match in body for cf-content.");
     }
-    const jschlSrc: string = jschlMatch[1]
+    const jschlSrc: string = jschlMatch[1] // Get the jschl src
       .replace(/a\.value =(.+?) \+ .+?;/i, "$1") // Remove content to detect host
       .replace(/\s{3,}[a-z](?: = |\.).+/g, "")
       .replace(/'; \d+'/g, "") // Strip bad data
@@ -227,6 +235,7 @@ export class CloudKicker {
     return (answerSandbox as any).jschl_answer;
   }
 
+  // Check the response body for any errors
   private checkForBodyErrors(body: any) {
     if (!(body instanceof String)) {
       body = body.toString();

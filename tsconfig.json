@@ -5,7 +5,7 @@
     "lib": ["es6", "es2015"],
     "declaration": true,
     "sourceMap": true,
-    "outDir": "./lib",
+    "outDir": "lib",
     "removeComments": true,
 
     "strict": true,
@@ -17,7 +17,6 @@
     "noImplicitReturns": true,
 
     "moduleResolution": "node",
-    "baseUrl": "./",
     "typeRoots": ["node_modules/@types"],
     "types": ["node", "mocha", "chai", "sinon"],
     "experimentalDecorators": true
@@ -26,9 +25,11 @@
     "node_modules"
   ],
   "include": [
-    "src/**/*.ts"
+    "src/**/*"
   ],
   "files": [
-    "src/index.ts"
+    "src/index.ts",
+    "src/options.ts",
+    "src/response.ts"
   ]
 }

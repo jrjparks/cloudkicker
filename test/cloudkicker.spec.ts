@@ -124,7 +124,9 @@ describe("CloudKicker Tests", () => {
       };
       return cloudkicker.performRequest(requestCfg, progress)
         .then(({options, response}) => {
-          expect(cloudkicker.cookieJar.getCookies(requestCfg.url)).to.have.length.of.at.least(3);
+          const cookies = cloudkicker.cookieJar.getCookies(requestCfg.url);
+          console.log(`cookies for '${requestCfg.url}': ${JSON.stringify(cookies)}`);
+          expect(cookies).to.have.length.of.at.least(3);
           expect(options).to.be.ok;
           expect(options.method).to.be.equal("GET");
 

@@ -18,7 +18,6 @@ export class CloudKicker {
 
   constructor(options?: CloudKickerOptions) {
     this.options = _.extend({
-      timeout: 6000,
       userAgent: defaultUserAgent,
     }, options);
     this.clearCookieJar();
@@ -30,9 +29,6 @@ export class CloudKicker {
   public async get(
     url: string,
     headers?: request.Headers): Promise<CloudKickerResponse> {
-    headers = _.extend({
-      "User-Agent": this.options.userAgent,
-    }, headers);
     const options: request.Options = {
       encoding: "utf-8",
       headers: (headers),
@@ -49,7 +45,6 @@ export class CloudKicker {
     headers = _.extend({
       "Content-Length": body.length,
       "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      "User-Agent": this.options.userAgent,
     }, headers);
     const options: request.Options = {
       body: (body),

@@ -1,3 +1,4 @@
+/* istanbul ignore next */
 import {OptionsWithUrl, RequestResponse} from "request";
 export interface ICloudKickerResponse {
   response: RequestResponse;

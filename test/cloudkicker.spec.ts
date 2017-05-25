@@ -187,9 +187,9 @@ describe("CloudKicker Tests", () => {
     });
 
     [
-      {jschl_vc: "08a298d4c2628034baf13a65447a39fa", jschl_answer: 503, pass: "1495346308.629-6l2sEPsMBE"},
-      {jschl_vc: "b76be6a414be29304e71b8182e10f5ae", jschl_answer: 1932, pass: "1495346327.713-T7KiiSDaGn"},
-      {jschl_vc: "fd3f772016f5128dd7c8a1c9aac25226", jschl_answer: -413, pass: "1495345360.223-WcJRFH1LVg"},
+      { jschl_vc: "08a298d4c2628034baf13a65447a39fa", jschl_answer: 503, pass: "1495346308.629-6l2sEPsMBE" },
+      { jschl_vc: "b76be6a414be29304e71b8182e10f5ae", jschl_answer: 1932, pass: "1495346327.713-T7KiiSDaGn" },
+      { jschl_vc: "fd3f772016f5128dd7c8a1c9aac25226", jschl_answer: -413, pass: "1495345360.223-WcJRFH1LVg" },
     ].forEach(({jschl_vc, jschl_answer, pass}) => {
       it(`should get protected page: jschl: ${jschl_vc}`, () => {
         const fakeResponse = generateFakeResponse(200, indexHtml, url);
@@ -217,10 +217,10 @@ describe("CloudKicker Tests", () => {
         return p;
       });
     });
-    });
+  });
 
-  if (!CI) {
-    describe("Live Tests", function() {
+  describe("Remote Live Tests", function() {
+    if (!CI) {
       this.timeout(6000); // there is a minimum of 4000ms on the live tests.
       this.slow(5000); // there is a minimum of 4000ms on the live tests.
       this.retries(3);
@@ -231,7 +231,7 @@ describe("CloudKicker Tests", () => {
         cloudkicker.clearCookieJar();
       });
 
-      it("should get unprotected page", () => {
+      it("should get unprotected page 'http://example.com/'", () => {
         const url: string = "http://example.com/";
         return cloudkicker.get(url)
           .then(({options, response}) => {
@@ -248,7 +248,7 @@ describe("CloudKicker Tests", () => {
           });
       });
 
-      it("should get protected page", () => {
+      it("should get protected page 'http://kissmanga.com/Manga/Knights-Magic'", () => {
         const url: string = "http://kissmanga.com/Manga/Knights-Magic";
         return cloudkicker.get(url)
           .then(({options, response}) => {
@@ -268,7 +268,7 @@ describe("CloudKicker Tests", () => {
           });
       });
 
-      it("should post protected page", () => {
+      it("should post protected page 'http://kissmanga.com/Search/Manga'", () => {
         const url: string = "http://kissmanga.com/Search/Manga";
         return cloudkicker.post(url, "keyword=One+Punch-Man")
           .then(({options, response}) => {
@@ -288,7 +288,7 @@ describe("CloudKicker Tests", () => {
           });
       });
 
-      it("performRequest(onProgress)", () => {
+      it("should get protected page 'http://kissmanga.com/Manga/Knights-Magic' with progress", () => {
         const requestCfg: request.OptionsWithUrl = {
           encoding: "utf-8",
           method: "GET",
@@ -316,8 +316,8 @@ describe("CloudKicker Tests", () => {
             throw error;
           });
       });
-    });
-  } else {
-    describe("Skipping Live Tests, on CI", () => undefined);
-  }
+    } else {
+      it.skip("detected running on CI, skipping");
+    }
+  });
 });

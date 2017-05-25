@@ -15,28 +15,23 @@ export type OnProgressCallback = (progress: number, total: number, ...args: any[
 export class CloudKicker {
   public cookieJar: request.CookieJar;
   private options: CloudKickerOptions;
-  private request: request.RequestAPI<request.Request, request.Options, request.RequiredUriUrl>;
 
   constructor(options?: CloudKickerOptions) {
     this.options = _.extend({
       timeout: 6000,
       userAgent: defaultUserAgent,
     }, options);
-    this.cookieJar = request.jar();
-    this.request = request.defaults({
-      jar: this.cookieJar,
-    });
+    this.clearCookieJar();
   }
 
   // Clear the cookieJar
   public clearCookieJar() {
     this.cookieJar = request.jar();
-    this.request.jar(this.cookieJar);
   }
 
   public async get(
     url: string,
-    headers: request.Headers): Promise<CloudKickerResponse> {
+    headers?: request.Headers): Promise<CloudKickerResponse> {
     headers = _.extend({
       "User-Agent": this.options.userAgent,
     }, headers);
@@ -52,7 +47,7 @@ export class CloudKicker {
   public async post(
     url: string,
     body: any,
-    headers: object): Promise<CloudKickerResponse> {
+    headers?: object): Promise<CloudKickerResponse> {
     headers = _.extend({
       "Content-Length": body.length,
       "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -78,14 +73,19 @@ export class CloudKicker {
     options = _.extend({
       encoding: null,
     }, options);
+    options.jar = this.cookieJar;
     return new Promise<CloudKickerResponse>((resolve, reject) => {
       if (!options.url) {
         return reject(new Error("url is not defined"));
+      } else if (!options.headers) {
+        return reject(new Error("headers is not defined"));
+      } else if (!options.headers["User-Agent"]) {
+        return reject(new Error("User-Agent is not defined"));
       }
 
       let receivedBytes = 0;
       let totalBytes = 0;
-      const req = this.request(options, (error, response) => {
+      const req = request(options, (error, response) => {
         if (error) { // If the request errors out reject.
           return reject(error);
         }
@@ -100,14 +100,14 @@ export class CloudKicker {
         if (jschlAnswerIndex >= 0) {
           return delay(4000) // wait 4000 ms to solve.
             .then(() => this.solveChallenge(response, options)) // Solve the JavaScript challenge.
-            .then((answerOptions) => this.performRequest(answerOptions)) // Submit the answer.
+            .then((answerOptions) => this.performRequest(answerOptions, onProgress)) // Submit the answer.
             .then((ckResponse) => {
               // Cleanup the qs from the options
               delete ckResponse.options.qs;
               // if method is a POST, we need to resubmit to get the correct response.
               if (ckResponse.options.method === "POST") {
                 ckResponse.options.url = ckResponse.response.headers.location;
-                return this.performRequest(ckResponse.options);
+                return this.performRequest(ckResponse.options, onProgress);
               }
               // Not a post method, return the CloudKickerResponse
               return ckResponse;
@@ -116,7 +116,7 @@ export class CloudKicker {
             .catch(reject); // Reject the error
         } else if (jschlRedirectedIndex >= 0 || sucuriCloudproxyIndex >= 0) {
           return this.setCookie(response, options) // This is a cookie challenge
-            .then((cookieOptions) => this.performRequest(cookieOptions)) // Rerun the request
+            .then((cookieOptions) => this.performRequest(cookieOptions, onProgress)) // Rerun the request
             .then(resolve) // Resolve the CloudKickerResponse
             .catch(reject); // Reject the error
         } else {
@@ -128,7 +128,7 @@ export class CloudKicker {
           // Update totalBytes to Content-Length
           totalBytes = parseInt(response.headers["Content-Length"], 10);
           if (onProgress) { // If onProgress is defined, call it on each data event.
-            req.on("data", (data) => onProgress(receivedBytes += data.length, totalBytes));
+            req.on("data", (data) => onProgress(receivedBytes += data.length, totalBytes, data));
           }
         }
       });
@@ -194,7 +194,11 @@ export class CloudKicker {
         const encodedJsSrc: string = encodedJsSrcMatch[1];
         const cookieJsSrc = new Buffer(encodedJsSrc, "base64").toString("ascii");
         // Run any foreign code in a vm sandbox
-        const cookieSandbox: vm.Context = {};
+        const cookieSandbox: vm.Context = {
+          location: { // The cookie code calls location.reload()
+            reload: () => undefined, // Let's not and say we did...
+          },
+        };
         vm.runInContext(cookieJsSrc, cookieSandbox, {
           timeout: (timeout),
         });

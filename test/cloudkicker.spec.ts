@@ -317,5 +317,7 @@ describe("CloudKicker Tests", () => {
           });
       });
     });
+  } else {
+    describe("Skipping Live Tests, on CI", () => undefined);
   }
 });

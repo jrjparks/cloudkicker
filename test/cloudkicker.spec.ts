@@ -27,7 +27,6 @@ describe("Function Tests", () => {
 describe("CloudKicker Tests", () => {
 
   const ckOptions: CloudKickerOptions = {
-    timeout: 6000,
     userAgent: "Ubuntu Chromium/34.0.1847.116 Chrome/34.0.1847.116 Safari/537.36",
   };
   const cloudkicker = new CloudKicker(ckOptions);

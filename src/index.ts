@@ -25,9 +25,7 @@ export class CloudKicker {
   }
 
   // Clear the cookieJar
-  public clearCookieJar() {
-    this.cookieJar = request.jar();
-  }
+  public clearCookieJar() { this.cookieJar = request.jar(); }
 
   public async get(
     url: string,
@@ -75,28 +73,21 @@ export class CloudKicker {
     }, options);
     options.jar = this.cookieJar;
     return new Promise<CloudKickerResponse>((resolve, reject) => {
-      if (!options.url) {
-        return reject(new Error("url is not defined"));
-      } else if (!options.headers) {
-        return reject(new Error("headers is not defined"));
-      } else if (!options.headers["User-Agent"]) {
-        return reject(new Error("User-Agent is not defined"));
-      }
+      if (!options.url) { return reject(new Error("url is not defined")); }
 
-      let receivedBytes = 0;
-      let totalBytes = 0;
-      const req = request(options, (error, response) => {
-        if (error) { // If the request errors out reject.
-          return reject(error);
-        }
+      let receivedBytes: number = 0;
+      let totalBytes: number = 0;
+      const req = this.request(options, (error, response) => {
+        // this.request(options, (error, response) => {
+        if (error) { return reject(error); } // If the request errors out reject.
         try { // Test body for errors.
           this.checkForBodyErrors(response.body);
-        } catch (bodyError) { // Reject on body errors.
-          return reject(bodyError);
-        }
+        } catch (bodyError) { return reject(bodyError); } // Reject on body errors.
+
         const jschlAnswerIndex = response.body.indexOf("a = document.getElementById(\'jschl-answer\');");
         const jschlRedirectedIndex = response.body.indexOf("You are being redirected");
         const sucuriCloudproxyIndex = response.body.indexOf("sucuri_cloudproxy_js");
+
         if (jschlAnswerIndex >= 0) {
           return delay(4000) // wait 4000 ms to solve.
             .then(() => this.solveChallenge(response, options)) // Solve the JavaScript challenge.
@@ -119,17 +110,15 @@ export class CloudKicker {
             .then((cookieOptions) => this.performRequest(cookieOptions, onProgress)) // Rerun the request
             .then(resolve) // Resolve the CloudKickerResponse
             .catch(reject); // Reject the error
-        } else {
-          return resolve(new CloudKickerResponse(response, options));
-        }
+        } else { return resolve(new CloudKickerResponse(response, options)); }
       });
+
       req.on("response", (response) => {
         if (response.statusCode !== 503) { // Ignore events for 503
           // Update totalBytes to Content-Length
           totalBytes = parseInt(response.headers["Content-Length"], 10);
-          if (onProgress) { // If onProgress is defined, call it on each data event.
-            req.on("data", (data) => onProgress(receivedBytes += data.length, totalBytes, data));
-          }
+          // If onProgress is defined, call it on each data event.
+          if (onProgress) { req.on("data", (data) => onProgress(receivedBytes += data.length, totalBytes, data)); }
         }
       });
     });
@@ -142,9 +131,7 @@ export class CloudKicker {
     return new Promise<request.Options>((resolve, reject) => {
       const body = response.body.toString();
       const host: string | undefined = response.request.host;
-      if (!host) {
-        return reject(new Error("Unable to get host from response.request"));
-      }
+      if (!host) { return reject(new Error("Unable to get host from response.request")); }
       const protocol = (response.request as any).uri.protocol;
       const answerUrl = `${protocol}//${host}/cdn-cgi/l/chk_jschl`;
 
@@ -169,6 +156,7 @@ export class CloudKicker {
       const headers = _.extend(options.headers, {
         Referer: ((response.request as any).uri.href),
       });
+
       options = _.extend(options, {
         headers: (headers),
         qs: (answer),
@@ -253,6 +241,21 @@ export class CloudKicker {
     const cfErrorMatch: RegExpMatchArray = body.match(cfErrorRegex);
     if (cfErrorMatch) {
       throw new Error(`Cloudflare Error: ${cfErrorMatch[1]}`);
+    }
+  }
+
+  // Translate request({method}) to request.method({})
+  private request(options: request.Options, callback: request.RequestCallback): request.Request {
+    const method = (options.method as string).toLowerCase();
+    switch (method) {
+      default: throw new Error("Unknown method was requested.");
+      case "get": return request.get(options, callback);
+      case "post": return request.post(options, callback);
+      case "put": return request.put(options, callback);
+      case "head": return request.head(options, callback);
+      case "patch": return request.patch(options, callback);
+      case "del": return request.del(options, callback);
+      case "delete": return request.delete(options, callback);
     }
   }
 }

@@ -4,3 +4,5 @@
 --colors
 --sort
 --ui bdd
+**/*.spec.ts
+**/*.spec.tsx

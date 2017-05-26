@@ -1,11 +1,27 @@
 {
   "check-coverage": true,
-  "lines": [60, 90],
-  "statements": [60, 90],
-  "functions": [60, 90],
-  "branches": [60, 90],
+  "lines": 90,
+  "statements": 90,
+  "functions": 90,
+  "branches": 90,
+  "watermarks": {
+    "lines": [60, 90],
+    "statements": [60, 90],
+    "functions": [60, 90],
+    "branches": [60, 90]
+  },
   "exclude": [
-    "**/*.d.ts"
+    "**/*.d.ts",
+    "test",
+    "test{,-*}.js",
+    "**/*.test.js",
+    "**/*.spec.js",
+    "**/__tests__/**",
+    "**/node_modules/**"
+  ],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
   ],
   "reporter": [
     "lcov",

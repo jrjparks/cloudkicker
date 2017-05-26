@@ -1,9 +1,9 @@
 export interface ICloudKickerOptions {
-  timeout: number;
   userAgent: string;
 }
 export class CloudKickerOptions implements ICloudKickerOptions {
-  public timeout: number;
   public userAgent: string;
+  constructor(userAgent: string) {
+    this.userAgent = userAgent;
+  }
 }
-export default CloudKickerOptions;

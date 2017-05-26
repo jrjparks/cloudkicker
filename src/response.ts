@@ -11,4 +11,3 @@ export class CloudKickerResponse implements ICloudKickerResponse {
     this.options = options;
   }
 }
-export default CloudKickerResponse;

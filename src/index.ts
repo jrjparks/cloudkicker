@@ -112,7 +112,6 @@ export class CloudKicker {
       // If onProgress is defined, call it.
       if (onProgress) {
         req.on("response", (response) => {
-          console.log(`statusCode: ${response.statusCode}`);
           if (response.statusCode === 503) {
             // Ignore events for 503
           } else {

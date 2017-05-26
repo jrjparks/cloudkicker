@@ -1,4 +1,3 @@
-/* istanbul ignore next */
 import {OptionsWithUrl, RequestResponse} from "request";
 export interface ICloudKickerResponse {
   response: RequestResponse;
@@ -12,4 +11,3 @@ export class CloudKickerResponse implements ICloudKickerResponse {
     this.options = options;
   }
 }
-export default CloudKickerResponse;

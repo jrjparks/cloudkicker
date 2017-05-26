@@ -1,10 +1,11 @@
 import * as _ from "lodash";
 import * as request from "request";
-import CloudKickerOptions from "./options";
-import CloudKickerResponse from "./response";
+import { ICloudKickerOptions } from "./options";
+import { CloudKickerResponse } from "./response";
 
 import vm = require("vm");
-const defaultUserAgent = "Ubuntu Chromium/34.0.1847.116 Chrome/34.0.1847.116 Safari/537.36";
+const defaultUserAgent =
+  "Mozilla/5.0 (X11: Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36";
 
 export function delay(ms: number): Promise<void> {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -14,9 +15,9 @@ export type OnProgressCallback = (progress: number, total: number, ...args: any[
 
 export class CloudKicker {
   public cookieJar: request.CookieJar;
-  private options: CloudKickerOptions;
+  private options: ICloudKickerOptions;
 
-  constructor(options?: CloudKickerOptions) {
+  constructor(options?: ICloudKickerOptions) {
     this.options = _.extend({
       userAgent: defaultUserAgent,
     }, options);
@@ -108,14 +109,19 @@ export class CloudKicker {
         } else { return resolve(new CloudKickerResponse(response, options)); }
       });
 
-      req.on("response", (response) => {
-        if (response.statusCode !== 503) { // Ignore events for 503
-          // Update totalBytes to Content-Length
-          totalBytes = parseInt(response.headers["Content-Length"], 10);
-          // If onProgress is defined, call it on each data event.
-          if (onProgress) { req.on("data", (data) => onProgress(receivedBytes += data.length, totalBytes, data)); }
-        }
-      });
+      // If onProgress is defined, call it.
+      if (onProgress) {
+        req.on("response", (response) => {
+          console.log(`statusCode: ${response.statusCode}`);
+          if (response.statusCode === 503) {
+            // Ignore events for 503
+          } else {
+            // Update totalBytes to Content-Length
+            totalBytes = parseInt(response.headers["Content-Length"], 10);
+            req.on("data", (data) => onProgress(receivedBytes += data.length, totalBytes, data));
+          }
+        });
+      }
     });
   }
 
@@ -175,13 +181,15 @@ export class CloudKicker {
           return reject(new Error("Unable to locate encoded cookie js source."));
         }
         const encodedJsSrc: string = encodedJsSrcMatch[1];
-        const cookieJsSrc = new Buffer(encodedJsSrc, "base64").toString("ascii");
+        const cookieJsSrc: string = new Buffer(encodedJsSrc, "base64").toString("ascii");
         // Run any foreign code in a vm sandbox
-        const cookieSandbox: vm.Context = {
+        const cookieSandbox: vm.Context = vm.createContext({
+          document: {},
           location: { // The cookie code calls location.reload()
             reload: () => undefined, // Let's not and say we did...
           },
-        };
+          window: {},
+        });
         vm.runInContext(cookieJsSrc, cookieSandbox, {
           timeout: (timeout),
         });
@@ -224,7 +232,9 @@ export class CloudKicker {
 
   // Check the response body for any errors
   private checkForBodyErrors(body: any) {
-    if (!(body instanceof String)) {
+    if (!body) {
+      throw new Error("body is undefined");
+    } else if (!_.isString(body)) {
       body = body.toString();
     }
     const cfCaptchaRegex: RegExp = /cdn-cgi\/l\/chk_captcha/i;

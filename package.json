@@ -1,6 +1,6 @@
 {
   "name": "cloudkicker",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "Node JS cloudflare bypass with promises",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -16,8 +16,11 @@
     "type": "git",
     "url": "git+https://github.com/jrjparks/cloudkicker.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "cloudflare",
+    "typescript"
+  ],
+  "author": "James Parks",
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/jrjparks/cloudkicker/issues"

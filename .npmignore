@@ -1,5 +1,6 @@
 test
 .npmignore
+.gitignore
 .nycrc
 .travis.yml
 gulpfile.js

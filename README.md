@@ -1,7 +1,7 @@
 # CloudKicker
 
 ## Status
-[![Dependencies](https://img.shields.io/david/jrjparks/cloudkicker.svg?style=flat-square)](https://david-dm.org/jrjparks/cloudkicker) [![devDependencies](https://img.shields.io/david/dev/jrjparks/cloudkicker.svg?style=flat-square)](https://david-dm.org/jrjparks/cloudkicker?type=dev)
+[![npm](https://img.shields.io/npm/v/cloudkicker.svg?style=flat-square)](https://www.npmjs.com/package/cloudkicker) [![Dependencies](https://img.shields.io/david/jrjparks/cloudkicker.svg?style=flat-square)](https://david-dm.org/jrjparks/cloudkicker) [![devDependencies](https://img.shields.io/david/dev/jrjparks/cloudkicker.svg?style=flat-square)](https://david-dm.org/jrjparks/cloudkicker?type=dev)
 
 | Branch | Master | Development |
 | - | -: | -: |

@@ -1,5 +1,6 @@
 import * as _ from "lodash";
 import * as request from "request";
+import { Url } from "url";
 import { ICloudKickerOptions } from "./options";
 import { CloudKickerResponse } from "./response";
 
@@ -28,7 +29,7 @@ export class CloudKicker {
   public clearCookieJar() { this.cookieJar = request.jar(); }
 
   public async get(
-    url: string,
+    url: Url | string,
     headers?: request.Headers): Promise<CloudKickerResponse> {
     const options: request.Options = {
       encoding: "utf-8",
@@ -40,7 +41,7 @@ export class CloudKicker {
   }
 
   public async post(
-    url: string,
+    url: Url | string,
     body: any,
     headers?: object): Promise<CloudKickerResponse> {
     headers = _.extend({

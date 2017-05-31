@@ -3,7 +3,7 @@ import { expect } from "chai";
 import fs = require("fs");
 import request = require("request");
 import * as sinon from "sinon";
-import { URL } from "url";
+import { Url, URL } from "url";
 import { CloudKicker, delay, OnProgressCallback } from "../src/index";
 import { CloudKickerOptions } from "../src/options";
 const CI = process.env.CI;
@@ -582,7 +582,7 @@ describe("CloudKicker Tests", () => {
       });
 
       it("should get unprotected page 'http://example.com/'", () => {
-        const url: string = "http://example.com/";
+        const url: Url | string = new URL("http://example.com/");
         return cloudkicker.get(url)
           .then(({options, response}) => {
             expect(options).to.be.ok;
@@ -599,7 +599,7 @@ describe("CloudKicker Tests", () => {
       });
 
       it("should get protected page 'http://kissmanga.com/Manga/Knights-Magic'", () => {
-        const url: string = "http://kissmanga.com/Manga/Knights-Magic";
+        const url: Url | string = new URL("http://kissmanga.com/Manga/Knights-Magic");
         return cloudkicker.get(url)
           .then(({options, response}) => {
             const cookies = cloudkicker.cookieJar.getCookies(url);
@@ -619,7 +619,7 @@ describe("CloudKicker Tests", () => {
       });
 
       it("should post protected page 'http://kissmanga.com/Search/Manga'", () => {
-        const url: string = "http://kissmanga.com/Search/Manga";
+        const url: Url | string = new URL("http://kissmanga.com/Search/Manga");
         return cloudkicker.post(url, "keyword=One+Punch-Man")
           .then(({options, response}) => {
             const cookies = cloudkicker.cookieJar.getCookies(url);
@@ -642,7 +642,7 @@ describe("CloudKicker Tests", () => {
         const requestCfg: request.OptionsWithUrl = {
           encoding: "utf-8",
           method: "GET",
-          url: "http://kissmanga.com/Manga/Knights-Magic",
+          url: new URL("http://kissmanga.com/Manga/Knights-Magic"),
         };
         const progress: OnProgressCallback = (c, t, data) => {
           expect(c).to.be.ok;

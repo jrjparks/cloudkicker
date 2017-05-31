@@ -1,37 +1,28 @@
 language: node_js
-node_js:
-  - "7"
+node_js: "7"
 cache:
   directories:
     - node_modules
 jobs:
   include:
     - stage: Tests
-      node_js: "7"
       script: npm test
       after_script: npm run coverage
     - stage: Release
-      node_js: "7"
       script: "npm run build && npm pack"
       deploy:
         - provider: releases
-          file_glob: true
-          file: cloudkicker-*.tgz
-          user: "${GITHUB_USER}"
-          api_key:
-            secure: "${GITHUB_OAUTH_TOKEN}"
+          file: "cloudkicker-${TRAVIS_TAG}.tgz"
+          api_key: "${GITHUB_OAUTH_TOKEN}"
           skip_cleanup: true
           on:
             branch: master
             tags: true
     - stage: Release
-      node_js: "7"
       script: npm run build
       deploy:
         - provider: npm
-          email: "${NPM_API_EMAIL}"
-          api_key:
-            secure: "${NPM_API_KEY}"
+          api_key: "${NPM_API_KEY}"
           skip_cleanup: true
           on:
             branch: master

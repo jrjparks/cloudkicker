@@ -16,6 +16,7 @@ jobs:
       deploy:
         - provider: releases
           file: "cloudkicker-*.tgz"
+          user: $GITHUB_USER
           api_key:
             secure: $GITHUB_OAUTH_TOKEN
           skip_cleanup: true
@@ -27,6 +28,7 @@ jobs:
       script: npm run build
       deploy:
         - provider: npm
+          email: $NPM_API_EMAIL
           api_key:
             secure: $NPM_API_KEY
           skip_cleanup: true

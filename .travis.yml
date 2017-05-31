@@ -12,15 +12,20 @@ jobs:
       after_script: npm run coverage
     - stage: Release
       node_js: "7"
-      script: npm run build
+      script: npm pack
       deploy:
         - provider: releases
+          file: "cloudkicker-*.tgz"
           api_key:
             secure: $GITHUB_OAUTH_TOKEN
           skip_cleanup: true
           on:
             branch: master
             tags: true
+    - stage: Release
+      node_js: "7"
+      script: npm run build
+      deploy:
         - provider: npm
           api_key:
             secure: $NPM_API_KEY

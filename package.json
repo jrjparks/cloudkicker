@@ -1,6 +1,6 @@
 {
   "name": "cloudkicker",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Node JS cloudflare bypass with promises",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

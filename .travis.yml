@@ -15,13 +15,15 @@ jobs:
       script: npm run build
       deploy:
         - provider: releases
-          api_key: $GITHUB_OAUTH_TOKEN
+          api_key:
+            secure: $GITHUB_OAUTH_TOKEN
           skip_cleanup: true
           on:
             branch: master
             tags: true
         - provider: npm
-          api_key: $NPM_API_KEY
+          api_key:
+            secure: $NPM_API_KEY
           skip_cleanup: true
           on:
             branch: master

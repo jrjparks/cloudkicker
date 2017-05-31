@@ -1,6 +1,6 @@
 {
   "name": "cloudkicker",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "Node JS cloudflare bypass with promises",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -10,7 +10,9 @@
   "scripts": {
     "build": "gulp rebuild:ts",
     "test": "nyc mocha",
-    "coverage": "nyc report --reporter=text-lcov | coveralls"
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "preversion": "npm test",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
@@ -53,5 +55,8 @@
     "@types/request": "0.0.43",
     "lodash": "^4.17.4",
     "request": "^2.81.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

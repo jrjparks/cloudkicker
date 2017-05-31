@@ -12,7 +12,9 @@ jobs:
       script: "npm run build && npm pack"
       deploy:
         - provider: releases
-          file: "cloudkicker-${TRAVIS_TAG}.tgz"
+          file_glob: true
+          file: "cloudkicker-*.tgz"
+          email: "${GITHUB_EMAIL}"
           api_key: "${GITHUB_OAUTH_TOKEN}"
           skip_cleanup: true
           on:
@@ -22,6 +24,7 @@ jobs:
       script: npm run build
       deploy:
         - provider: npm
+          email: "${NPM_EMAIL}"
           api_key: "${NPM_API_KEY}"
           skip_cleanup: true
           on:

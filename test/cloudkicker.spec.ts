@@ -4,7 +4,8 @@ import fs = require("fs");
 import request = require("request");
 import * as sinon from "sinon";
 import { Url, URL } from "url";
-import { CloudKicker, delay, OnProgressCallback } from "../src/index";
+import { delay } from "../src/cloudkicker";
+import { CloudKicker, OnProgressCallback } from "../src/index";
 import { CloudKickerOptions } from "../src/options";
 const CI = process.env.CI;
 

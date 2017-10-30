@@ -11,10 +11,33 @@
 ## About
 Typescript Cloudflare bypass with promises.
 
-###### Methods Tested / Supported
-- [x] GET
-- [x] POST
-- [ ] PUT
-- [ ] HEAD
-- [ ] PATCH
-- [ ] DELETE
+###### Example
+```bash
+$ npm install -save cloudkicker
+```
+
+```javascript
+// Javascript
+var cloudkicker = require('cloudkicker');
+var ck = new cloudkicker.CloudKicker();
+ck.get('https://example.com/')
+    .then(function(cloudkicker_response) {
+        // Do something with
+        // cloudkicker_response.options,
+        // cloudkicker_response.response  <-  This is what you'll normally need.
+    }).catch(function (error) {
+        // Do something with error
+    });
+```
+
+```typescript
+// Typescript
+import { CloudKicker } from "cloudkicker";
+const cloudkicker = new CloudKicker();
+cloudkicker.get("https://example.com/")
+    .then(({response}) => {
+        // Do something with response.
+    }).catch((error) => {
+        // Do something with error
+    });
+```

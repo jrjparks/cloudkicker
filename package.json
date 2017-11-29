@@ -1,6 +1,6 @@
 {
   "name": "cloudkicker",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Node JS cloudflare bypass with promises",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -13,6 +13,26 @@
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "preversion": "npm test",
     "postversion": "git push && git push --tags"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts",
+      "src/**/*.tsx"
+    ],
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "html"
+    ],
+    "sourceMap": true,
+    "instrument": true,
+    "all": true
   },
   "repository": {
     "type": "git",
@@ -29,11 +49,11 @@
   },
   "homepage": "https://github.com/jrjparks/cloudkicker#readme",
   "devDependencies": {
-    "@types/chai": "^3.5.2",
+    "@types/chai": "^4.0.1",
     "@types/mocha": "^2.2.41",
-    "@types/node": "^7.0.21",
+    "@types/node": "^8.0.4",
     "@types/sinon": "^2.2.2",
-    "chai": "^3.5.0",
+    "chai": "^4.0.2",
     "coveralls": "^2.13.1",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
@@ -43,7 +63,7 @@
     "gulp-typescript": "^3.1.6",
     "mocha": "^3.4.1",
     "mocha-typescript": "^1.1.4",
-    "nyc": "^10.3.2",
+    "nyc": "^11.0.3",
     "sinon": "^2.2.0",
     "source-map-support": "^0.4.15",
     "ts-node": "^3.0.4",
@@ -52,7 +72,7 @@
   },
   "dependencies": {
     "@types/lodash": "^4.14.64",
-    "@types/request": "0.0.43",
+    "@types/request": "0.0.45",
     "lodash": "^4.17.4",
     "request": "^2.81.0"
   },

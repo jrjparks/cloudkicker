@@ -144,7 +144,7 @@ describe("CloudKicker Tests", () => {
     });
 
     ["get", "post", "put", "head", "patch", "del", "delete"]
-      .forEach((method: string) => {
+      .forEach((method: any) => {
         it(`should test method: ${method}`, () => {
           const requestOptions = {
             method: (method.toUpperCase()),

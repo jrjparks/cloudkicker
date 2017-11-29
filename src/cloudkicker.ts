@@ -135,7 +135,7 @@ export class CloudKicker {
   private solveChallenge(
     response: request.RequestResponse,
     options: request.OptionsWithUrl): Promise<request.OptionsWithUrl> {
-    return new Promise<request.Options>((resolve, reject) => {
+    return new Promise<request.OptionsWithUrl>((resolve, reject) => {
       const body = response.body.toString();
       const host: string | undefined = response.request.host;
       if (!host) { return reject(new Error("Unable to get host from response.request")); }
@@ -178,7 +178,7 @@ export class CloudKicker {
     response: request.RequestResponse,
     options: request.OptionsWithUrl,
     timeout: number = 500): Promise<request.OptionsWithUrl> {
-    return new Promise<request.Options>((resolve, reject) => {
+    return new Promise<request.OptionsWithUrl>((resolve, reject) => {
       try {
         const body = response.body.toString();
         const encodedJsSrcRegex: RegExp = /S='([^']+)'/;

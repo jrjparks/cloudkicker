@@ -101,9 +101,9 @@ export class CloudKicker {
               // if method is a POST, we need to resubmit to get the correct response.
               if (ckResponse.options.method === "POST") {
                 if (typeof ckResponse.response.headers.location === "string") {
-                  ckResponse.options.url = ckResponse.response.headers.location;
+                  ckResponse.options.url = ckResponse.response.headers.location as string;
                 } else if (typeof ckResponse.response.headers.Location === "string") {
-                  ckResponse.options.url = ckResponse.response.headers.Location;
+                  ckResponse.options.url = ckResponse.response.headers.Location as string;
                 } else {
                   throw new Error("Unable to locate redirect header.");
                 }

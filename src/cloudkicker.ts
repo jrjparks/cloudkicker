@@ -125,11 +125,12 @@ export class CloudKicker {
       // If onProgress is defined, call it.
       if (onProgress) {
         req.on("response", (response) => {
+          const contentLength: string | string[] | undefined = response.headers["Content-Length"];
           if (response.statusCode === 503) {
             // Ignore events for 503
-          } else {
+          } else if (typeof contentLength === "string") {
             // Update totalBytes to Content-Length
-            totalBytes = parseInt(response.headers["Content-Length"], 10);
+            totalBytes = parseInt(contentLength, 10);
             req.on("data", (data) => onProgress(receivedBytes += data.length, totalBytes, data));
           }
         });

@@ -62,7 +62,7 @@ describe("CloudKicker Tests", () => {
       requestUrl = new URL(requestUrl as string);
       const headers: request.Headers = {
         "Content-Length": _.isEmpty(body) ? 0 : (body.length),
-        "Location": requestUrl.toString(),
+        "location": requestUrl.toString(),
       };
       return {
         body: (body),

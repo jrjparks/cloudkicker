@@ -1,5 +1,6 @@
 /// <reference types="mocha"/>
 import { expect } from "chai";
+import * as _ from "lodash";
 import fs = require("fs");
 import request = require("request");
 import * as sinon from "sinon";
@@ -60,8 +61,8 @@ describe("CloudKicker Tests", () => {
     const generateFakeResponse = (code: number, body: any, requestUrl: string | URL) => {
       requestUrl = new URL(requestUrl as string);
       const headers: request.Headers = {
-        "Content-Length": (body.length),
-        "location": (requestUrl.toString()),
+        "Content-Length": _.isEmpty(body) ? 0 : (body.length),
+        "location": requestUrl.toString(),
       };
       return {
         body: (body),
@@ -143,7 +144,7 @@ describe("CloudKicker Tests", () => {
     });
 
     ["get", "post", "put", "head", "patch", "del", "delete"]
-      .forEach((method: string) => {
+      .forEach((method: any) => {
         it(`should test method: ${method}`, () => {
           const requestOptions = {
             method: (method.toUpperCase()),
@@ -665,6 +666,70 @@ describe("CloudKicker Tests", () => {
           })
           .catch((error) => {
             throw error;
+          });
+      });
+
+      it("should get protected page 'https://bato.to/forums/' with progress", () => {
+        const requestCfg: request.OptionsWithUrl = {
+          encoding: "utf-8",
+          method: "GET",
+          url: new URL("https://bato.to/forums/"),
+        };
+        const progress: OnProgressCallback = (c, t, data) => {
+          expect(c).to.be.ok;
+          expect(c).to.be.within(0, t || c + 1);
+          expect(data).to.be.ok;
+        };
+        return cloudkicker.performRequest(requestCfg, progress)
+          .then(({options, response}) => {
+            const cookies = cloudkicker.cookieJar.getCookies(requestCfg.url);
+            expect(cookies).to.have.lengthOf(3);
+            expect(options).to.be.ok;
+            expect(options.method).to.be.equal("GET");
+
+            expect(response).to.be.ok;
+            expect(response.body).to.be.ok;
+            expect(response.statusCode).to.be.equal(200);
+            expect(/ipb_common/.test(response.body)).to.be.ok;
+            expect(/880ea6a14ea49e853634fbdc5015a024/.test(response.body)).to.be.ok;
+          })
+          .catch((error) => {
+            throw error;
+          });
+      });
+
+      it("should pipe to local disk 'https://bato.to/'", () => {
+        const requestCfg: request.OptionsWithUrl = {
+          encoding: "utf-8",
+          method: "GET",
+          url: new URL("https://bato.to/"),
+        };
+        return cloudkicker.performRequest(requestCfg)
+          .then(({options, response}) => {
+            const cookies = cloudkicker.cookieJar.getCookies(requestCfg.url);
+            expect(cookies).to.have.lengthOf(3);
+            expect(options).to.be.ok;
+            expect(options.method).to.be.equal("GET");
+
+            expect(response).to.be.ok;
+            expect(response.body).to.be.ok;
+            expect(response.statusCode).to.be.equal(200);
+            expect(/ipb_common/.test(response.body)).to.be.ok;
+            expect(/880ea6a14ea49e853634fbdc5015a024/.test(response.body)).to.be.ok;
+          })
+          .catch((error) => {
+            throw error;
+          }).then(() => new Promise((resolve, reject) => {
+            requestCfg.jar = cloudkicker.cookieJar;
+            request(requestCfg).pipe(fs.createWriteStream("test.txt"))
+              .on("finish", resolve)
+              .on("end", resolve)
+              .on("error", reject);
+          })).then(() => {
+            const testFile: string = fs.readFileSync("test.txt").toString();
+            fs.unlinkSync("test.txt");
+            expect(/ipb_common/.test(testFile)).to.be.ok;
+            expect(/880ea6a14ea49e853634fbdc5015a024/.test(testFile)).to.be.ok;
           });
       });
     }

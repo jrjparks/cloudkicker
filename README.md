@@ -11,10 +11,32 @@
 ## About
 Typescript Cloudflare bypass with promises.
 
-###### Methods Tested / Supported
-- [x] GET
-- [x] POST
-- [ ] PUT
-- [ ] HEAD
-- [ ] PATCH
-- [ ] DELETE
+## Examples
+```javascript
+/* Basic Example */
+import { CloudKicker } from "cloudkicker";
+const cloudkicker = new CloudKicker();
+cloudkicker.get("https://example.com/").then(({options, response}) => {
+  /* response.body is a Buffer */
+  const body: string = response.body.toString();
+  /* Do some cool stuff with the response */
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+```javascript
+/* Pipe Example */
+import { CloudKicker } from "cloudkicker";
+import * as request from "request";
+import * as fs from "fs";
+const cloudkicker = new CloudKicker();
+const index = await cloudkicker.get("https://example.com/");
+const options: request.Options = {
+  encoding: "utf-8",
+  jar: cloudkicker.cookieJar,
+  method: "GET",
+  url: "https://example.com/doodle.png",
+};
+request(options).pipe(fs.createWriteStream("doodle.png"));
+```

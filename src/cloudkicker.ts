@@ -43,7 +43,7 @@ export class CloudKicker {
   public async post(
     url: Url | string,
     body: any,
-    headers?: object): Promise<CloudKickerResponse> {
+    headers?: request.Headers): Promise<CloudKickerResponse> {
     headers = _.extend({
       "Content-Length": body.length,
       "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -74,16 +74,22 @@ export class CloudKicker {
 
       let receivedBytes: number = 0;
       let totalBytes: number = 0;
-      const req = this.request(options, (error, response) => {
+      const req = this.request(options, (error: Error, response: request.RequestResponse) => {
         // this.request(options, (error, response) => {
         if (error) { return reject(error); } // If the request errors out reject.
+        let emptyResponse = false;
         try { // Test body for errors.
-          this.checkForBodyErrors(response.body);
+          emptyResponse = this.checkForBodyErrors(response.body, response.statusCode);
         } catch (bodyError) { return reject(bodyError); } // Reject on body errors.
 
-        const jschlAnswerIndex = response.body.indexOf("a = document.getElementById(\'jschl-answer\');");
-        const jschlRedirectedIndex = response.body.indexOf("You are being redirected");
-        const sucuriCloudproxyIndex = response.body.indexOf("sucuri_cloudproxy_js");
+        let jschlAnswerIndex = -1;
+        let jschlRedirectedIndex = -1;
+        let sucuriCloudproxyIndex = -1;
+        if (!emptyResponse && !_.isEmpty(response.body)) {
+          jschlAnswerIndex = response.body.indexOf("a = document.getElementById(\'jschl-answer\');");
+          jschlRedirectedIndex = response.body.indexOf("You are being redirected");
+          sucuriCloudproxyIndex = response.body.indexOf("sucuri_cloudproxy_js");
+        }
 
         if (jschlAnswerIndex >= 0) {
           return delay(4000) // wait 4000 ms to solve.
@@ -94,7 +100,13 @@ export class CloudKicker {
               delete ckResponse.options.qs;
               // if method is a POST, we need to resubmit to get the correct response.
               if (ckResponse.options.method === "POST") {
-                ckResponse.options.url = ckResponse.response.headers.location;
+                if (typeof ckResponse.response.headers.location === "string") {
+                  ckResponse.options.url = ckResponse.response.headers.location as string;
+                } else if (typeof ckResponse.response.headers.Location === "string") {
+                  ckResponse.options.url = ckResponse.response.headers.Location as string;
+                } else {
+                  throw new Error("Unable to locate redirect header.");
+                }
                 return this.performRequest(ckResponse.options, onProgress);
               }
               // Not a post method, return the CloudKickerResponse
@@ -113,11 +125,12 @@ export class CloudKicker {
       // If onProgress is defined, call it.
       if (onProgress) {
         req.on("response", (response) => {
+          const contentLength: string | string[] | undefined = response.headers["Content-Length"];
           if (response.statusCode === 503) {
             // Ignore events for 503
-          } else {
+          } else if (typeof contentLength === "string") {
             // Update totalBytes to Content-Length
-            totalBytes = parseInt(response.headers["Content-Length"], 10);
+            totalBytes = parseInt(contentLength, 10);
             req.on("data", (data) => onProgress(receivedBytes += data.length, totalBytes, data));
           }
         });
@@ -129,7 +142,7 @@ export class CloudKicker {
   private solveChallenge(
     response: request.RequestResponse,
     options: request.OptionsWithUrl): Promise<request.OptionsWithUrl> {
-    return new Promise<request.Options>((resolve, reject) => {
+    return new Promise<request.OptionsWithUrl>((resolve, reject) => {
       const body = response.body.toString();
       const host: string | undefined = response.request.host;
       if (!host) { return reject(new Error("Unable to get host from response.request")); }
@@ -172,7 +185,7 @@ export class CloudKicker {
     response: request.RequestResponse,
     options: request.OptionsWithUrl,
     timeout: number = 500): Promise<request.OptionsWithUrl> {
-    return new Promise<request.Options>((resolve, reject) => {
+    return new Promise<request.OptionsWithUrl>((resolve, reject) => {
       try {
         const body = response.body.toString();
         const encodedJsSrcRegex: RegExp = /S='([^']+)'/;
@@ -231,12 +244,12 @@ export class CloudKicker {
   }
 
   // Check the response body for any errors
-  private checkForBodyErrors(body: any) {
+  private checkForBodyErrors(body: any, statusCode?: number): boolean {
     if (!body) {
-      throw new Error("body is undefined");
-    } else if (!_.isString(body)) {
-      body = body.toString();
-    }
+      if (!statusCode || [301, 302].indexOf(statusCode) === -1) {
+        throw new Error("body is undefined");
+      } else { return true; }
+    } else if (!_.isString(body)) { body = body.toString(); }
     const cfCaptchaRegex: RegExp = /cdn-cgi\/l\/chk_captcha/i;
     const cfWhyCaptchaIndex: number = body.indexOf("why_captcha");
     if (cfWhyCaptchaIndex >= 0 || cfCaptchaRegex.test(body)) {
@@ -247,6 +260,7 @@ export class CloudKicker {
     if (cfErrorMatch) {
       throw new Error(`Cloudflare Error: ${cfErrorMatch[1]}`);
     }
+    return false;
   }
 
   // Translate request({method}) to request.method({})

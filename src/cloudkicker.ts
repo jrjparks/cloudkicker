@@ -85,7 +85,7 @@ export class CloudKicker {
         let jschlAnswerIndex = -1;
         let jschlRedirectedIndex = -1;
         let sucuriCloudproxyIndex = -1;
-        if (!_.isEmpty(response.body)) {
+        if (!emptyResponse && !_.isEmpty(response.body)) {
           jschlAnswerIndex = response.body.indexOf("a = document.getElementById(\'jschl-answer\');");
           jschlRedirectedIndex = response.body.indexOf("You are being redirected");
           sucuriCloudproxyIndex = response.body.indexOf("sucuri_cloudproxy_js");

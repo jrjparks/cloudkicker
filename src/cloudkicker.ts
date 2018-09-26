@@ -234,6 +234,7 @@ export class CloudKicker {
       .replace(/'; \d+'/g, "") // Strip bad data
       .replace("s,t,o,p,b,r,e,a,k,i,n,g,f, ", "")  // Strip the script of unused vars
       .replace("parseInt", "var jschl_answer=(parseInt") // Assign the result to a variable
+      .replace(/([^\s]+\.toFixed\(\d+\))/, "var jschl_answer=($1") // Assign the result to a variable
       + `+ ${host.length});`; // Append host length to calculation
     // Run any foreign code in a vm sandbox
     const answerSandbox: vm.Context = vm.createContext();

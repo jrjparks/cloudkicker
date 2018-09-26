@@ -291,6 +291,7 @@ describe("CloudKicker Tests", () => {
         { jschl_vc: "08a298d4c2628034baf13a65447a39fa", jschl_answer: 503, pass: "1495346308.629-6l2sEPsMBE" },
         { jschl_vc: "b76be6a414be29304e71b8182e10f5ae", jschl_answer: 1932, pass: "1495346327.713-T7KiiSDaGn" },
         { jschl_vc: "fd3f772016f5128dd7c8a1c9aac25226", jschl_answer: -413, pass: "1495345360.223-WcJRFH1LVg" },
+        { jschl_vc: "73b3fd13900cccdfa7ad224fe1b244ef", jschl_answer: 15.7153719524, pass: "1537953191.219-Eu2iobvVjm" },
       ].forEach(({jschl_vc, jschl_answer, pass}) => {
         it(`should get page protected by jschlAnswer: ${jschl_vc}`, () => {
           const fakeResponse = generateFakeResponse(200, indexHtml, url);
@@ -666,70 +667,6 @@ describe("CloudKicker Tests", () => {
           })
           .catch((error) => {
             throw error;
-          });
-      });
-
-      it("should get protected page 'https://bato.to/forums/' with progress", () => {
-        const requestCfg: request.OptionsWithUrl = {
-          encoding: "utf-8",
-          method: "GET",
-          url: new URL("https://bato.to/forums/"),
-        };
-        const progress: OnProgressCallback = (c, t, data) => {
-          expect(c).to.be.ok;
-          expect(c).to.be.within(0, t || c + 1);
-          expect(data).to.be.ok;
-        };
-        return cloudkicker.performRequest(requestCfg, progress)
-          .then(({options, response}) => {
-            const cookies = cloudkicker.cookieJar.getCookies(requestCfg.url);
-            expect(cookies).to.have.lengthOf(3);
-            expect(options).to.be.ok;
-            expect(options.method).to.be.equal("GET");
-
-            expect(response).to.be.ok;
-            expect(response.body).to.be.ok;
-            expect(response.statusCode).to.be.equal(200);
-            expect(/ipb_common/.test(response.body)).to.be.ok;
-            expect(/880ea6a14ea49e853634fbdc5015a024/.test(response.body)).to.be.ok;
-          })
-          .catch((error) => {
-            throw error;
-          });
-      });
-
-      it("should pipe to local disk 'https://bato.to/'", () => {
-        const requestCfg: request.OptionsWithUrl = {
-          encoding: "utf-8",
-          method: "GET",
-          url: new URL("https://bato.to/"),
-        };
-        return cloudkicker.performRequest(requestCfg)
-          .then(({options, response}) => {
-            const cookies = cloudkicker.cookieJar.getCookies(requestCfg.url);
-            expect(cookies).to.have.lengthOf(3);
-            expect(options).to.be.ok;
-            expect(options.method).to.be.equal("GET");
-
-            expect(response).to.be.ok;
-            expect(response.body).to.be.ok;
-            expect(response.statusCode).to.be.equal(200);
-            expect(/ipb_common/.test(response.body)).to.be.ok;
-            expect(/880ea6a14ea49e853634fbdc5015a024/.test(response.body)).to.be.ok;
-          })
-          .catch((error) => {
-            throw error;
-          }).then(() => new Promise((resolve, reject) => {
-            requestCfg.jar = cloudkicker.cookieJar;
-            request(requestCfg).pipe(fs.createWriteStream("test.txt"))
-              .on("finish", resolve)
-              .on("end", resolve)
-              .on("error", reject);
-          })).then(() => {
-            const testFile: string = fs.readFileSync("test.txt").toString();
-            fs.unlinkSync("test.txt");
-            expect(/ipb_common/.test(testFile)).to.be.ok;
-            expect(/880ea6a14ea49e853634fbdc5015a024/.test(testFile)).to.be.ok;
           });
       });
     }

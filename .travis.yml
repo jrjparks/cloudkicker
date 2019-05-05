@@ -1,7 +1,5 @@
 language: node_js
 node_js:
-  - "4"
-  - "5"
   - "6"
   - "7"
   - "8"
@@ -14,7 +12,7 @@ cache:
 jobs:
   include:
     - stage: Tests
-      script: npm test
+      script: "npm run build && npm test"
       after_script: npm run coverage
     - stage: Release
       if: branch = master

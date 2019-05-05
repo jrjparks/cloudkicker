@@ -1,6 +1,13 @@
 language: node_js
 node_js:
+  - "4"
+  - "5"
+  - "6"
+  - "7"
+  - "8"
+  - "9"
   - "lts/*"
+  - "node"
 cache:
   directories:
     - node_modules
@@ -9,7 +16,9 @@ jobs:
     - stage: Tests
       script: npm test
       after_script: npm run coverage
-    - stage: GitHub Release
+    - stage: Release
+      if: branch = master
+      node_js: "lts/*"
       script: "npm run build && npm pack"
       deploy:
         - provider: releases
@@ -21,9 +30,6 @@ jobs:
           on:
             branch: master
             tags: true
-    - stage: NPM Release
-      script: npm run build
-      deploy:
         - provider: npm
           email: "${NPM_API_EMAIL}"
           api_key: "${NPM_API_KEY}"

@@ -15,7 +15,7 @@ export function delay(ms: number): Promise<void> {
 export type OnProgressCallback = (progress: number, total: number, ...args: any[]) => void;
 
 export class CloudKicker {
-  public cookieJar: request.CookieJar;
+  public cookieJar!: request.CookieJar;
   private options: ICloudKickerOptions;
 
   constructor(options?: ICloudKickerOptions) {
@@ -151,8 +151,10 @@ export class CloudKicker {
 
       const jschlVcRegex: RegExp = /name="jschl_vc" value="(\w+)"/;
       const passRegex: RegExp = /name="pass" value="(.+?)"/;
+      const sRegex: RegExp = /name="s" value="(.+?)"/;
       const jschlVcMatch: RegExpMatchArray | null = body.match(jschlVcRegex);
       const passMatch: RegExpMatchArray | null = body.match(passRegex);
+      const sMatch: RegExpMatchArray | null = body.match(sRegex);
 
       if (!jschlVcMatch || !jschlVcMatch[1]) {
         return reject(new Error("Unable to parse jschl_vc from response."));
@@ -161,11 +163,13 @@ export class CloudKicker {
       }
       const jschlVc = jschlVcMatch[1];
       const pass = passMatch[1];
+      const s = (sMatch && sMatch[1]) ? sMatch[1] : undefined;
       const jschlAnswer = this.solveJschlAnswer(body, host);
       const answer = {
         jschl_answer: (jschlAnswer),
         jschl_vc: (jschlVc),
         pass: (pass),
+        s: (s),
       };
       const headers = _.extend(options.headers, {
         Referer: ((response.request as any).uri.href),
@@ -194,7 +198,7 @@ export class CloudKicker {
           return reject(new Error("Unable to locate encoded cookie js source."));
         }
         const encodedJsSrc: string = encodedJsSrcMatch[1];
-        const cookieJsSrc: string = new Buffer(encodedJsSrc, "base64").toString("ascii");
+        const cookieJsSrc: string = Buffer.from(encodedJsSrc, "base64").toString("ascii");
         // Run any foreign code in a vm sandbox
         const cookieSandbox: vm.Context = vm.createContext({
           document: {},
@@ -229,12 +233,13 @@ export class CloudKicker {
       throw new Error("Unable to find match in body for cf-content.");
     }
     const jschlSrc: string = jschlMatch[1] // Get the jschl src
-      .replace(/a\.value =(.+?) \+ .+?;/i, "$1") // Remove content to detect host
+      .replace(/e\s=\sfunction\(s\)\s\{[\s\S]*\};/gmiu, "")  // Strip the script of internal functions
+      .replace(/a\.value\s=\s/i, "var jschl_answer=") // Assign the result to a variable
       .replace(/\s{3,}[a-z](?: = |\.).+/g, "")
       .replace(/'; \d+'/g, "") // Strip bad data
+      .replace(/t.length/g, host.length.toString()) // Set the host length in calculations
       .replace("s,t,o,p,b,r,e,a,k,i,n,g,f, ", "")  // Strip the script of unused vars
-      .replace("parseInt", "var jschl_answer=(parseInt") // Assign the result to a variable
-      + `+ ${host.length});`; // Append host length to calculation
+      .trim();
     // Run any foreign code in a vm sandbox
     const answerSandbox: vm.Context = vm.createContext();
     vm.runInContext(jschlSrc, answerSandbox, {

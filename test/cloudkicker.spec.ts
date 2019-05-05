@@ -8,6 +8,7 @@ import { Url, URL } from "url";
 import { delay } from "../src/cloudkicker";
 import { CloudKicker, OnProgressCallback } from "../src/index";
 import { CloudKickerOptions } from "../src/options";
+import { isUndefined } from "util";
 const CI = process.env.CI;
 
 describe("Function Tests", () => {
@@ -34,7 +35,7 @@ describe("CloudKicker Tests", () => {
 
   it("should clear CookieJar", () => {
     const url: string = "http://example.com";
-    const testCookie: request.Cookie = request.cookie("test=test");
+    const testCookie: request.Cookie = request.cookie("test=test") as request.Cookie;
     expect(cloudkicker.cookieJar.getCookies(url)).to.be.empty;
     cloudkicker.cookieJar.setCookie(testCookie, url);
     expect(cloudkicker.cookieJar.getCookies(url)).to.have.lengthOf(1);
@@ -80,14 +81,17 @@ describe("CloudKicker Tests", () => {
       method: string,
       jschlAnswer: number,
       jschlVc: string,
-      pass: string) => {
+      pass: string,
+      s: string | undefined) => {
       const requestUrl: URL = new URL(cfUrl);
+      const jschl_answer: number = jschlAnswer + requestUrl.host.length;
       return {
         method: (method),
         qs: {
-          jschl_answer: jschlAnswer + requestUrl.host.length,
+          jschl_answer: isUndefined(s) ? jschl_answer : jschl_answer.toFixed(10),
           jschl_vc: jschlVc,
           pass: (pass),
+          s: s,
         },
         url: requestUrl.toString(),
       };
@@ -263,7 +267,7 @@ describe("CloudKicker Tests", () => {
           expect(data).to.be.ok;
         };
         const fakeResponse = generateFakeResponse(200, indexHtmlBuffer, url);
-        const cfRequestArgs = cfAnswerArgs("GET", jschlAnswer, jschlVc, pass);
+        const cfRequestArgs = cfAnswerArgs("GET", jschlAnswer, jschlVc, pass, undefined);
         const cfResponse = generateFakeResponse(503, getFixture(`jschlAnswer/${jschlVc}.html`), url);
         const requestGet: sinon.SinonStub = sandbox.stub(request, "get");
         requestGet
@@ -288,14 +292,15 @@ describe("CloudKicker Tests", () => {
       });
 
       [
-        { jschl_vc: "08a298d4c2628034baf13a65447a39fa", jschl_answer: 503, pass: "1495346308.629-6l2sEPsMBE" },
-        { jschl_vc: "b76be6a414be29304e71b8182e10f5ae", jschl_answer: 1932, pass: "1495346327.713-T7KiiSDaGn" },
-        { jschl_vc: "fd3f772016f5128dd7c8a1c9aac25226", jschl_answer: -413, pass: "1495345360.223-WcJRFH1LVg" },
-        { jschl_vc: "73b3fd13900cccdfa7ad224fe1b244ef", jschl_answer: 15.7153719524, pass: "1537953191.219-Eu2iobvVjm" },
-      ].forEach(({jschl_vc, jschl_answer, pass}) => {
+        { jschl_vc: "08a298d4c2628034baf13a65447a39fa", jschl_answer: 503, pass: "1495346308.629-6l2sEPsMBE", s: undefined },
+        { jschl_vc: "b76be6a414be29304e71b8182e10f5ae", jschl_answer: 1932, pass: "1495346327.713-T7KiiSDaGn", s: undefined },
+        { jschl_vc: "fd3f772016f5128dd7c8a1c9aac25226", jschl_answer: -413, pass: "1495345360.223-WcJRFH1LVg", s: undefined },
+        { jschl_vc: "73b3fd13900cccdfa7ad224fe1b244ef", jschl_answer: 2.7153719524, pass: "1537953191.219-Eu2iobvVjm", s: undefined },
+        { jschl_vc: "1e1a36d47dbf1075e9973c6a6da89469", jschl_answer: -6.303899449106451, pass: "1557009311.218-+49TSzCiP2", s: "256dc065c132a653b25fbc6f19c0b61559b8954f-1557009307-1800-AWViaUh1wZ8AL5mgjdBswNf2kJvKIp9U9wxN5Zi9yydVSBEDGlJwHzOOaT42l5eF7W5HDQ8HbT6i4aFZk5YXbQ+jiTOjFF8KJglvn19evjsyDu05nMXnhC1AkACe0poE7wbZb0xZxEw2ygHnUOTrSlY=" },
+      ].forEach(({jschl_vc, jschl_answer, pass, s}) => {
         it(`should get page protected by jschlAnswer: ${jschl_vc}`, () => {
           const fakeResponse = generateFakeResponse(200, indexHtml, url);
-          const cfRequestArgs = cfAnswerArgs("GET", jschl_answer, jschl_vc, pass);
+          const cfRequestArgs = cfAnswerArgs("GET", jschl_answer, jschl_vc, pass, s);
           const cfResponse = generateFakeResponse(503, getFixture(`jschlAnswer/${jschl_vc}.html`), url);
           const requestGet: sinon.SinonStub = sandbox.stub(request, "get");
           requestGet
@@ -304,6 +309,7 @@ describe("CloudKicker Tests", () => {
           requestGet
             .withArgs(sinon.match(cfRequestArgs))
             .returns(fakeRequestObject).yields(null, fakeResponse);
+          requestGet.throws(new Error("Unhandled request"));
 
           const p = cloudkicker.get(url)
             .then(({options, response}) => {
@@ -321,14 +327,16 @@ describe("CloudKicker Tests", () => {
       });
 
       [
-        { jschl_vc: "08a298d4c2628034baf13a65447a39fa", jschl_answer: 503, pass: "1495346308.629-6l2sEPsMBE" },
-        { jschl_vc: "b76be6a414be29304e71b8182e10f5ae", jschl_answer: 1932, pass: "1495346327.713-T7KiiSDaGn" },
-        { jschl_vc: "fd3f772016f5128dd7c8a1c9aac25226", jschl_answer: -413, pass: "1495345360.223-WcJRFH1LVg" },
-      ].forEach(({jschl_vc, jschl_answer, pass}) => {
+        { jschl_vc: "08a298d4c2628034baf13a65447a39fa", jschl_answer: 503, pass: "1495346308.629-6l2sEPsMBE", s: undefined },
+        { jschl_vc: "b76be6a414be29304e71b8182e10f5ae", jschl_answer: 1932, pass: "1495346327.713-T7KiiSDaGn", s: undefined },
+        { jschl_vc: "fd3f772016f5128dd7c8a1c9aac25226", jschl_answer: -413, pass: "1495345360.223-WcJRFH1LVg", s: undefined },
+        { jschl_vc: "73b3fd13900cccdfa7ad224fe1b244ef", jschl_answer: 2.7153719524, pass: "1537953191.219-Eu2iobvVjm", s: undefined },
+        { jschl_vc: "1e1a36d47dbf1075e9973c6a6da89469", jschl_answer: -6.303899449106451, pass: "1557009311.218-+49TSzCiP2", s: "256dc065c132a653b25fbc6f19c0b61559b8954f-1557009307-1800-AWViaUh1wZ8AL5mgjdBswNf2kJvKIp9U9wxN5Zi9yydVSBEDGlJwHzOOaT42l5eF7W5HDQ8HbT6i4aFZk5YXbQ+jiTOjFF8KJglvn19evjsyDu05nMXnhC1AkACe0poE7wbZb0xZxEw2ygHnUOTrSlY=" },
+      ].forEach(({jschl_vc, jschl_answer, pass, s}) => {
         it(`should post page protected by jschlAnswer: ${jschl_vc}`, () => {
           const fakeResponse = generateFakeResponse(200, indexHtml, url);
           const fakeRedirect = generateFakeResponse(302, "Redirect 302", url);
-          const cfRequestArgs = cfAnswerArgs("POST", jschl_answer, jschl_vc, pass);
+          const cfRequestArgs = cfAnswerArgs("POST", jschl_answer, jschl_vc, pass, s);
           const cfResponse = generateFakeResponse(503, getFixture(`jschlAnswer/${jschl_vc}.html`), url);
           const requestPost: sinon.SinonStub = sandbox.stub(request, "post");
           requestPost
@@ -340,6 +348,7 @@ describe("CloudKicker Tests", () => {
           requestPost
             .withArgs(sinon.match(cfRequestArgs))
             .returns(fakeRequestObject).yields(null, fakeRedirect);
+          requestPost.throws(new Error("Unhandled request"));
 
           const p = cloudkicker.post(url, pass)
             .then(({options, response}) => {
@@ -576,8 +585,8 @@ describe("CloudKicker Tests", () => {
     if (CI) {
       it.skip("detected running on CI, skipping");
     } else {
-      this.timeout(6000); // there is a minimum of 4000ms on the live tests.
-      this.slow(5000); // there is a minimum of 4000ms on the live tests.
+      this.timeout(10000); // there is a minimum of 4000ms on the live tests.
+      this.slow(6000); // there is a minimum of 4000ms on the live tests.
       this.retries(3);
 
       beforeEach(() => {
@@ -601,8 +610,8 @@ describe("CloudKicker Tests", () => {
           });
       });
 
-      it("should get protected page 'http://kissmanga.com/Manga/Knights-Magic'", () => {
-        const url: Url | string = new URL("http://kissmanga.com/Manga/Knights-Magic");
+      it("should get protected page 'https://kissmanga.com/Manga/Knights-Magic'", () => {
+        const url: Url | string = new URL("https://kissmanga.com/Manga/Knights-Magic");
         return cloudkicker.get(url)
           .then(({options, response}) => {
             const cookies = cloudkicker.cookieJar.getCookies(url);
@@ -621,8 +630,8 @@ describe("CloudKicker Tests", () => {
           });
       });
 
-      it("should post protected page 'http://kissmanga.com/Search/Manga'", () => {
-        const url: Url | string = new URL("http://kissmanga.com/Search/Manga");
+      it("should post protected page 'https://kissmanga.com/Search/Manga'", () => {
+        const url: Url | string = new URL("https://kissmanga.com/Search/Manga");
         return cloudkicker.post(url, "keyword=One+Punch-Man")
           .then(({options, response}) => {
             const cookies = cloudkicker.cookieJar.getCookies(url);
@@ -641,11 +650,11 @@ describe("CloudKicker Tests", () => {
           });
       });
 
-      it("should get protected page 'http://kissmanga.com/Manga/Knights-Magic' with progress", () => {
+      it("should get protected page 'https://kissmanga.com/Manga/Knights-Magic' with progress", () => {
         const requestCfg: request.OptionsWithUrl = {
           encoding: "utf-8",
           method: "GET",
-          url: new URL("http://kissmanga.com/Manga/Knights-Magic"),
+          url: new URL("https://kissmanga.com/Manga/Knights-Magic"),
         };
         const progress: OnProgressCallback = (c, t, data) => {
           expect(c).to.be.ok;

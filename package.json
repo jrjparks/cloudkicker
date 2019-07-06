@@ -12,7 +12,9 @@
     "test": "nyc mocha",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "preversion": "npm test",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "nyc": {
     "include": [
@@ -75,9 +77,11 @@
     "@types/request": "^2.48.1",
     "lodash": "^4.17.11",
     "natives": "^1.1.6",
-    "request": "^2.82.0"
+    "request": "^2.82.0",
+    "snyk": "^1.192.3"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "snyk": true
 }
